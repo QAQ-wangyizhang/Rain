@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <title>下雨天</title>
+</head>
+
+<body>
+    <canvas id="cavs">
+
+    </canvas>
+    <script src="index.js"></script>
+    <script>
+        var cavs = document.getElementById('cavs');
+        var ctx = cavs.getContext('2d'); //canvasRenderingContext2d
+        //3d webg1 分支 threejs
+        var w = cavs.width = window.innerWidth;
+        var h = cavs.height = window.innerHeight;
+        window.onresize = function () {
+            var w = cavs.width = window.innerWidth;
+            var h = cavs.height = window.innerHeight;
+        }
+        var count = 30;
+        var RainArr = [];
+
+        //画一个圆形
+        // ctx.beginPath(); //开启一个路径
+        // ctx.arc(200, 200, 50, 0, 2 * Math.PI, false)
+        // //圆心的坐标x , y , 半径 , 起点角度, 2*π , false 顺时针的方向画 true则为逆时针
+        // ctx.strokeStyle = 'rgba(255,255,255,0.5)'
+        // ctx.closePath(); //闭合路径
+        // ctx.stroke(); //启动 开始绘制 默认黑色
+
+        //填充矩形
+        //探究动画的原理
+        // var init = {
+        //     x: 200,
+        //     y: 0,
+        //     r: 1,
+        //     t: 1, //透明度
+        //     draw: function () {
+        //         ctx.fillStyle = '#fff';
+        //         ctx.fillRect(this.x, this.y, 2, 10);
+        //     },
+        //     round: function () {
+        //         this.y = 200;
+        //         // 画一个圆形
+        //         ctx.beginPath(); //开启一个路径
+        //         ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false)
+        //         //圆心的坐标x , y , 半径 , 起点角度, 2*π , false 顺时针的方向画 true则为逆时针
+        //         ctx.strokeStyle = 'rgba(0,255,255,' + this.t + ')'
+        //         ctx.closePath(); //闭合路径
+        //         ctx.stroke(); //启动 开始绘制 默认黑色
+        //     }
+        // }
+        // // var y = 0;
+        // ctx.fillStyle = '#fff';
+        // ctx.fillRect(200, 0, 2, 10);
+        // //x,y坐标 w ,h 宽高
+
+        // function move() {
+        //     // y += 5;
+        //     // ctx.fillRect(200, y, 20, 50);
+        //     // if (y > h) {
+        //     //     return
+        //     // }
+        //     ctx.fillStyle = "rgba(0,0,0,0.1)";
+        //     ctx.fillRect(0, 0, w, h);
+        //     if (this.y > (h - 150)) {
+        //         init.round();
+        //         if (init.t > 0.03) {
+        //             init.r += 1;
+        //             if (init.r > 50) {
+        //                 init.t *= 0.96;
+        //             }
+        //         } else {
+        //             return;
+        //         }
+        //     } else {
+        //         init.y += 2;
+        //         init.draw();
+        //     }
+
+
+        // init.r += 2;
+
+        // window.requestAnimationFrame(move)
+        // // h5 request 帧动画跟随屏幕的刷新率动画函数
+        // }
+
+        function Rain() { //构造函数
+
+        }
+        Rain.prototype = {
+            init: function () { //初始化
+                this.x = random(1, w);
+                this.y = 0; //坐标 x ,y
+                this.r = 1; //半径
+                this.rSpeed = 1; //半径加速度
+                this.ySpeed = random(4, 7); //加速度
+                this.t = 1; //透明度
+                this.ts = 0.96; //透明度系数
+                this.l = random(h * 0.8, h * 0.9);
+                this.maxR = 50;
+            },
+            draw: function () {
+                if (this.y > this.l) {
+                    ctx.beginPath(); //开启一个路径
+                    ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false)
+                    //圆心的坐标x , y , 半径 , 起点角度, 2*π , false 顺时针的方向画 true则为逆时针
+                    ctx.strokeStyle = 'rgba(0,255,255,' + this.t + ')';
+                    ctx.closePath(); //闭合路径
+                    ctx.stroke(); //启动 开始绘制 默认黑色
+                } else {
+                    ctx.fillStyle = colorRandom(this.t);
+                    ctx.fillRect(this.x, this.y, 2, 10);
+                }
+                this.updeta(); //坐标更新
+
+            },
+            updeta: function () {
+                if (this.y > this.l) {
+                    if (this.t > 0.03) {
+                        this.r += this.rSpeed;
+                        if (this.r > this.maxR) {
+                            this.t *= this.ts;
+                        }
+                    } else {
+                        // return;
+                        this.init(); //初始化 重新执行 爆炸完毕之后
+                    }
+                } else {
+                    this.y += this.ySpeed;
+                    // this.draw();
+                }
+
+            }
+        }
+
+
+        var one = new Rain();
+        one.init();
+
+        function random(min, max) {
+            return Math.floor(Math.random() * (max - min) + min);
+        }
+
+        function move() {
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            ctx.fillRect(0, 0, w, h);
+            for (var i = 0; i < RainArr.length; i++) {
+                RainArr[i].draw();
+            }
+
+            //    one.draw();
+            window.requestAnimationFrame(move)
+        }
+
+        function createRain() {
+            for (var i = 0; i < count; i++) {
+                (function (j) {
+                    setTimeout(function () {
+                        var rain = new Rain();
+                        rain.init();
+                        RainArr.push(rain);
+                    }, j * 200)
+                })(i);
+            }
+        }
+        function colorRandom(t) {
+            var r = Math.random()*256;
+            var g = Math.random()*256;
+            var b = Math.random()*256;
+            return "rgba("+ r+","+ g+","+ b+","+ t+")"
+        }
+        createRain();
+        move();
+    </script>
+</body>
+
+</html>
